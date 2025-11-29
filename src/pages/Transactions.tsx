@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTransactions } from "../context/TransactionContext.jsx";
+import { useTransactions } from "../context/TransactionContext.js";
 import {
   Button,
   Container,
@@ -11,35 +11,45 @@ import {
   MenuItem,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Transaction } from "../types/types.ts";
 
 const Transactions = () => {
   const { transactions, addTransaction, deleteTransaction } = useTransactions();
+
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("Income");
+  const [type, setType] = useState("income");
+  const [category, setCategory] = useState("General");
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    addTransaction({
-      id: Date.now(),
+
+    const newTransaction = {
+      id: Date.now().toString(),
       title,
       amount: parseFloat(amount),
+      type,
       category,
       date: new Date().toISOString(),
-    });
+    };
+
+    addTransaction(newTransaction);
+
     setTitle("");
     setAmount("");
   };
 
-  // ✅ فیلتر و جستجو
+  // فیلتر و جستجو
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch =
       t.title.toLowerCase().includes(search.toLowerCase()) ||
       t.amount.toString().includes(search);
+
     const matchesCategory =
       filterCategory === "All" || t.category === filterCategory;
+
     return matchesSearch && matchesCategory;
   });
 
@@ -49,7 +59,7 @@ const Transactions = () => {
         Transactions
       </Typography>
 
-      {/* 🟢 فرم افزودن تراکنش */}
+      {/* فرم افزودن تراکنش */}
       <form
         onSubmit={handleSubmit}
         style={{
@@ -66,6 +76,7 @@ const Transactions = () => {
           onChange={(e) => setTitle(e.target.value)}
           required
         />
+
         <TextField
           label="Amount"
           type="number"
@@ -73,6 +84,18 @@ const Transactions = () => {
           onChange={(e) => setAmount(e.target.value)}
           required
         />
+
+        <TextField
+          select
+          label="Type"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          sx={{ minWidth: 120 }}
+        >
+          <MenuItem value="income">Income</MenuItem>
+          <MenuItem value="expense">Expense</MenuItem>
+        </TextField>
+
         <TextField
           select
           label="Category"
@@ -80,8 +103,11 @@ const Transactions = () => {
           onChange={(e) => setCategory(e.target.value)}
           sx={{ minWidth: 120 }}
         >
-          <MenuItem value="Income">Income</MenuItem>
-          <MenuItem value="Expense">Expense</MenuItem>
+          <MenuItem value="General">General</MenuItem>
+          <MenuItem value="Food">Food</MenuItem>
+          <MenuItem value="Rent">Rent</MenuItem>
+          <MenuItem value="Shopping">Shopping</MenuItem>
+          <MenuItem value="Salary">Salary</MenuItem>
         </TextField>
 
         <Button
@@ -96,7 +122,7 @@ const Transactions = () => {
         </Button>
       </form>
 
-      {/* 🟡 بخش فیلتر و جستجو */}
+      {/* فیلتر و جستجو */}
       <div
         style={{
           display: "flex",
@@ -121,12 +147,15 @@ const Transactions = () => {
           sx={{ minWidth: 150 }}
         >
           <MenuItem value="All">All</MenuItem>
-          <MenuItem value="Income">Income</MenuItem>
-          <MenuItem value="Expense">Expense</MenuItem>
+          <MenuItem value="General">General</MenuItem>
+          <MenuItem value="Food">Food</MenuItem>
+          <MenuItem value="Rent">Rent</MenuItem>
+          <MenuItem value="Shopping">Shopping</MenuItem>
+          <MenuItem value="Salary">Salary</MenuItem>
         </TextField>
       </div>
 
-      {/* 🔵 لیست تراکنش‌ها */}
+      {/* لیست تراکنش‌ها */}
       <List>
         {filteredTransactions.map((transaction) => (
           <ListItem
@@ -142,8 +171,10 @@ const Transactions = () => {
             }}
           >
             <span>
-              {transaction.title} — ${transaction.amount} ({transaction.category})
+              {transaction.title} — ${transaction.amount} ({transaction.type}) |{" "}
+              {transaction.category}
             </span>
+
             <IconButton
               edge="end"
               aria-label="delete"
@@ -160,3 +191,4 @@ const Transactions = () => {
 };
 
 export default Transactions;
+
